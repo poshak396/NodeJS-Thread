@@ -1,0 +1,33 @@
+The cluster module supports two methods of distributing incoming connections.
+
+The first one (and the default one on all platforms except Windows) is the round-robin approach, where the primary process listens on a port, accepts new connections and distributes them across the workers in a round-robin fashion, with some built-in smarts to avoid overloading a worker process.
+
+The second approach is where the primary process creates the listen socket and sends it to interested workers. The workers then accept incoming connections directly.
+
+The second approach should, in theory, give the best performance. In practice however, distribution tends to be very unbalanced due to operating system scheduler vagaries. Loads have been observed where over 70% of all connections ended up in just two processes, out of a total of eight.   How to overcome this second approach issue ?
+
+
+
+-------------
+
+Balancing the distribution of incoming connections in a multi-process architecture like the one you described can be challenging. If you're experiencing an imbalance where a few processes handle the majority of connections, there are several strategies you can consider to address this issue:
+
+1. **Dynamic Process Management:** Implement a dynamic process management strategy. This means that you monitor the workload of each worker process and adjust the distribution of incoming connections accordingly. When a worker becomes overloaded, you can temporarily reduce its share of connections and increase the share of less loaded workers.
+
+2. **Load Balancing Algorithms:** Use more advanced load balancing algorithms instead of simple round-robin. For example, you could use a weighted round-robin approach where you assign different weights to each worker process based on its capacity or performance. This allows you to control how connections are distributed more precisely.
+
+3. **Worker Pool Resizing:** Implement dynamic resizing of your worker pool. When you detect an imbalance, you can spawn or terminate worker processes as needed. Tools like "pm2" for Node.js or "gunicorn" for Python provide features for managing process pools dynamically.
+
+4. **Operating System Tuning:** Depending on your operating system, you might be able to fine-tune process affinity settings to influence how the OS schedules connections to worker processes. However, this can be platform-specific and may require careful testing.
+
+5. **External Load Balancer:** Consider using an external load balancer like Nginx or HAProxy in front of your application. These load balancers are designed to distribute incoming connections efficiently and can balance the load among your worker processes or servers.
+
+6. **Connection Queues:** Implement a connection queue mechanism that allows you to buffer incoming connections. This can help ensure that connections are evenly distributed among worker processes. When a worker becomes available, it can fetch a connection from the queue.
+
+7. **Use Thread Pools:** If your programming language supports multithreading, consider using thread pools within your worker processes. This can help mitigate the scheduler vagaries associated with multiple processes.
+
+8. **Optimize Worker Processes:** Ensure that your worker processes are optimized for handling connections efficiently. This includes minimizing resource contention, optimizing code, and using non-blocking I/O where possible.
+
+9. **Monitoring and Profiling:** Continuously monitor the performance of your application and worker processes. Profiling tools can help identify bottlenecks and performance issues that may be contributing to the imbalance.
+
+Remember that the effectiveness of these strategies can vary depending on your specific application and workload. It's essential to carefully test and benchmark any changes you make to ensure they have the desired effect on connection distribution and overall performance.

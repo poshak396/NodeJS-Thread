@@ -1,0 +1,17 @@
+version: '2'
+services:
+
+  nodejs-thread-demp:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    container_name: nodejs-thread-demo
+    volumes:
+      - .:/opt/app
+      - /opt/app/node_modules
+    ports:
+      - "3000:3000"
+    command: npm run start:dev
+    # command: tail -f /dev/null
+
+
